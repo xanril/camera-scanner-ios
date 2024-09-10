@@ -10,4 +10,7 @@
       <CodesignKey>Apple Development: Kristian Mitra (5ZTS9G759S)</CodesignKey>
       <CodesignProvision>Wildcard iOS Development</CodesignProvision>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="DataScannerViewController.Ios.Maui" Version="1.1.0" />
+    </ItemGroup>
 </Project>
