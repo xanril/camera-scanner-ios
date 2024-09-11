@@ -6,11 +6,6 @@ namespace CameraScannerIOS.Helpers;
 
 public static class ImageRecognizerHelper
 {
-    private static string[] IGNORE_LIST = new[]
-    {
-        "CHINABANK", "BC", "YEARS", "PRIME", "Visa", "MasterCard", "Mastercard", "American Express", "Discover"
-    };
-    
     public static CardDetails ValidateScanImage(UIImage image)
     {
         var cgImage = image?.CGImage;
@@ -41,12 +36,10 @@ public static class ImageRecognizerHelper
             }
 
             scannedItems = getScannedItemsInfo(results, image);
-            // parseResultsV2(scannedItems);
         });
         
         textRecognitionRequest.RecognitionLevel = VNRequestTextRecognitionLevel.Accurate;
-        textRecognitionRequest.UsesLanguageCorrection = true;
-        textRecognitionRequest.CustomWords = IGNORE_LIST;
+        textRecognitionRequest.UsesLanguageCorrection = false;
         
         var handler = new VNImageRequestHandler(cgImage, new VNImageOptions());
         try
@@ -63,8 +56,7 @@ public static class ImageRecognizerHelper
         {
             Console.WriteLine("Recognized Text: " + item);
         }
-           
-        // return parseResults(recognizedTextList);
+
         return parseResultsV2(scannedItems);
     }
     
@@ -94,8 +86,6 @@ public static class ImageRecognizerHelper
                 continue;
             }
 
-            
-            
             // Get the normalized CGRect value.
             var boundingBox = boxObservation?.BoundingBox ?? CGRect.Empty;
 
@@ -118,45 +108,6 @@ public static class ImageRecognizerHelper
         return scannedItems;
     }
     
-    private static CardDetails parseResults(List<string> recognizedTextList)
-    {
-        var cardDetails = new CardDetails();
-        
-        // credit card number
-        var fixedCreditCardInitialNumbers = new[] { '4', '5', '3', '6' };
-        var creditCardNumber = recognizedTextList.FirstOrDefault(text => text.Length >= 14 && fixedCreditCardInitialNumbers.Contains(text.First()));
-        cardDetails.CreditCardNumber = creditCardNumber;
-        Console.WriteLine("Credit Card Number: " + creditCardNumber);
-        
-        // Expiry Date
-        var expiryDateString = recognizedTextList.FirstOrDefault(text => text.Length > 4 && text.Contains("/"));
-        var expiryDateChars = expiryDateString?.Where(c => char.IsDigit(c) || c == '/');
-        var expiryDate = expiryDateChars?.Aggregate("", (current, c) => current + c);
-        Console.WriteLine("Expiry Date: " + expiryDate);
-        
-        var wordsToAvoid = new List<string>();
-
-        if (creditCardNumber?.ToString() != null)
-        {
-            wordsToAvoid.Add(creditCardNumber);
-        }
-
-        if (expiryDate?.ToString() != null)
-        {
-            wordsToAvoid.Add(expiryDate?.ToString());
-        }
-        
-        wordsToAvoid.AddRange(IGNORE_LIST);
-        wordsToAvoid.AddRange(IGNORE_LIST.Select(x => x.ToLower()));
-        wordsToAvoid.AddRange(IGNORE_LIST.Select(x => x.ToUpper()));
-        
-        // Name
-        var name = recognizedTextList.LastOrDefault(text => !wordsToAvoid.Contains(text));
-        cardDetails.Name = name;
-        Console.WriteLine("Name: " + name);
-
-        return cardDetails;
-    }
 
     private static CardDetails parseResultsV2(List<ScannedItem> scannedItems)
     {
@@ -164,7 +115,8 @@ public static class ImageRecognizerHelper
         
         // look for credit card number
         cardDetails.CreditCardNumber = parseCreditCardNumber(scannedItems);
-
+        cardDetails.Name = parseName(scannedItems);
+        
         return cardDetails;
     }
 
@@ -181,7 +133,7 @@ public static class ImageRecognizerHelper
         var candidateNumbers = filteredItems.Where(x => fixedCreditCardInitialNumbers.Contains(x.Text.First())).ToList();
         
         // get the item with the lowest X value
-        var initialNumber = candidateNumbers.OrderBy(x => x.Bounds.X).FirstOrDefault();
+        var initialNumber = candidateNumbers.OrderBy(x => x.Bounds.X).FirstOrDefault() ?? new ScannedItem();
         
         // group items that are close to each other
         var groupedItems = new List<ScannedItem>();
@@ -228,5 +180,61 @@ public static class ImageRecognizerHelper
         }
         
         return formattedNumber.ToString();
+    }
+    
+    private static string parseName(List<ScannedItem> scannedItems)
+    {
+        var ignoreList = new[]
+        {
+            "CHINABANK", "BC", "EC", "YEARS", "PRIME", "Visa", "MasterCard", "Mastercard", "American Express", "Discover", "Member", "Since"
+        };
+        
+        var wordsToAvoid = new List<string>();
+        wordsToAvoid.AddRange(ignoreList);
+        wordsToAvoid.AddRange(ignoreList.Select(x => x.ToLower()));
+        wordsToAvoid.AddRange(ignoreList.Select(x => x.ToUpper()));
+        
+        // filter scannedItems with text that contain numbers only
+        var filteredItems = scannedItems.Where(x => 
+            x.Text.Any(char.IsDigit) == false
+            && wordsToAvoid.Contains(x.Text) == false).ToList();
+
+        // get the item with the lowest Y value
+        var initialName = filteredItems
+            .OrderByDescending(x => x.Bounds.Y)
+            .ThenBy(x => x.Bounds.X)
+            .FirstOrDefault() ?? new ScannedItem();
+        
+        // group items that are close to each other
+        var groupedItems = new List<ScannedItem>();
+        for (var i = 0; i < filteredItems.Count; i++)
+        {
+            var currentItem = filteredItems[i];
+            if (currentItem == initialName)
+            {
+                continue;
+            }
+            var distance = Math.Abs(currentItem.Bounds.Y - initialName.Bounds.Y);
+            if (distance < 30)
+            {
+                groupedItems.Add(currentItem);
+            }
+        }
+        
+        // combine the initial number and grouped items
+        var combinedItems = new List<ScannedItem> { initialName };
+        combinedItems.AddRange(groupedItems);
+        
+        // sort the combined items by X value
+        var sortedItems = combinedItems.OrderBy(x => x.Bounds.X).ToList();
+        
+        // combine the text
+        var name = "";
+        foreach (var item in sortedItems)
+        {
+            name += item.Text + " ";
+        }
+        
+        return name;
     }
 }
