@@ -49,7 +49,7 @@ public class CameraScanViewController : UIViewController, IVNDocumentCameraViewC
         {
             TranslatesAutoresizingMaskIntoConstraints = false
         };
-        button.SetTitle("Click Me", UIControlState.Normal);
+        button.SetTitle("Scan Card", UIControlState.Normal);
         
         // Connect the button's click event to the handler method
         button.TouchUpInside += Button_Clicked;

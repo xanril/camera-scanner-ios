@@ -6,6 +6,8 @@ namespace CameraScannerIOS.Helpers;
 
 public static class ImageRecognizerHelper
 {
+    private static int COORDINATE_THRESHOLD = 100;
+    
     public static CardDetails ValidateScanImage(UIImage image)
     {
         var cgImage = image?.CGImage;
@@ -145,7 +147,7 @@ public static class ImageRecognizerHelper
                 continue;
             }
             var distance = Math.Abs(currentItem.Bounds.Y - initialNumber.Bounds.Y);
-            if (distance < 30)
+            if (distance < COORDINATE_THRESHOLD)
             {
                 groupedItems.Add(currentItem);
             }
@@ -186,7 +188,7 @@ public static class ImageRecognizerHelper
     {
         var ignoreList = new[]
         {
-            "CHINABANK", "BC", "EC", "YEARS", "PRIME", "Visa", "MasterCard", "Mastercard", "American Express", "Discover", "Member", "Since"
+            "CHINABANK", "BC", "EC", "YEARS", "PRIME", "Visa", "Master", "Card", "MasterCard", "Mastercard", "Valid", "Thru", "Member", "Since"
         };
         
         var wordsToAvoid = new List<string>();
@@ -215,7 +217,7 @@ public static class ImageRecognizerHelper
                 continue;
             }
             var distance = Math.Abs(currentItem.Bounds.Y - initialName.Bounds.Y);
-            if (distance < 30)
+            if (distance < COORDINATE_THRESHOLD)
             {
                 groupedItems.Add(currentItem);
             }
@@ -235,6 +237,6 @@ public static class ImageRecognizerHelper
             name += item.Text + " ";
         }
         
-        return name;
+        return name?.ToUpperInvariant();
     }
 }
