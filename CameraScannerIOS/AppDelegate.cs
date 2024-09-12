@@ -13,7 +13,7 @@ public class AppDelegate : UIApplicationDelegate
         Window = new UIWindow(UIScreen.MainScreen.Bounds);
         
         // create a UINavigationController with MainPageViewController as the root
-        var mainPageViewController = new CameraScanViewController();
+        var mainPageViewController = new MainPageViewController();
         var navigationController = new UINavigationController(mainPageViewController);
         Window.RootViewController = navigationController;
 

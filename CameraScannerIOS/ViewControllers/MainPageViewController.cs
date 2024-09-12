@@ -5,7 +5,7 @@ public class MainPageViewController: UIViewController, IUITableViewDataSource, I
     #region Fields
 
     private readonly UITableView _tableView = new UITableView();
-    private readonly string[] _items = ["Autofill Demo", "Item 2", "Item 3", "Item 4", "Item 5"];
+    private readonly string[] _items = ["Demo 1", "Demo 2 (not working)", "Demo 3"];
 
     #endregion
 
@@ -55,15 +55,25 @@ public class MainPageViewController: UIViewController, IUITableViewDataSource, I
         
         if (indexPath.Row == 0)
         {
-            navigateToAutofillViewController();
+            navigateToDemo1();
+        }
+        else if (indexPath.Row == 2)
+        {
+            navigateToDemo3();
         }
     }
     
     #endregion
     
-    private void navigateToAutofillViewController()
+    private void navigateToDemo1()
     {
         var autofillViewController = new AutofillViewController();
+        NavigationController.PushViewController(autofillViewController, true);
+    }
+    
+    private void navigateToDemo3()
+    {
+        var autofillViewController = new CameraScanViewController();
         NavigationController.PushViewController(autofillViewController, true);
     }
 

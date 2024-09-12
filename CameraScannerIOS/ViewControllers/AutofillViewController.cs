@@ -12,13 +12,22 @@ public class AutofillViewController: UIViewController
             TextAlignment = UITextAlignment.Left,
             TranslatesAutoresizingMaskIntoConstraints = false
         };
-
-        // Create and configure the text field
-        var nameTextField = new UITextField
+        
+        var addressTextField = new UITextField
         {
             BorderStyle = UITextBorderStyle.RoundedRect,
-            Placeholder = "Name:",
-            TranslatesAutoresizingMaskIntoConstraints = false
+            Placeholder = "Address:",
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            AutocorrectionType = UITextAutocorrectionType.No
+        };
+        
+        var urlTextField = new UITextField
+        {
+            BorderStyle = UITextBorderStyle.RoundedRect,
+            Placeholder = "URL:",
+            TextContentType = UITextContentType.Url,
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            AutocorrectionType = UITextAutocorrectionType.No
         };
         
         var phoneNumberTextField = new UITextField
@@ -33,7 +42,8 @@ public class AutofillViewController: UIViewController
 
         // Add the label and text field to the view
         View.AddSubview(label);
-        View.AddSubview(nameTextField);
+        View.AddSubview(addressTextField);
+        View.AddSubview(urlTextField);
         View.AddSubview(phoneNumberTextField);
 
         // Set up constraints
@@ -42,12 +52,16 @@ public class AutofillViewController: UIViewController
             label.TopAnchor.ConstraintEqualTo(View.SafeAreaLayoutGuide.TopAnchor, 20),
             label.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor, 20),
             label.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor, -20),
-
-            nameTextField.TopAnchor.ConstraintEqualTo(label.BottomAnchor, 20),
-            nameTextField.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor, 20),
-            nameTextField.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor, -20),
             
-            phoneNumberTextField.TopAnchor.ConstraintEqualTo(nameTextField.BottomAnchor, 20),
+            addressTextField.TopAnchor.ConstraintEqualTo(label.BottomAnchor, 20),
+            addressTextField.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor, 20),
+            addressTextField.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor, -20),
+
+            urlTextField.TopAnchor.ConstraintEqualTo(addressTextField.BottomAnchor, 20),
+            urlTextField.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor, 20),
+            urlTextField.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor, -20),
+            
+            phoneNumberTextField.TopAnchor.ConstraintEqualTo(urlTextField.BottomAnchor, 20),
             phoneNumberTextField.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor, 20),
             phoneNumberTextField.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor, -20)
         });
